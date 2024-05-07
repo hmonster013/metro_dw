@@ -1,0 +1,2 @@
+threaded
+mysql-connector-python
