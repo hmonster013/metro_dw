@@ -166,17 +166,17 @@ while (not stream_buffer.empty()):
     mj.readFromMD(ext_ds, tmd)
     dict[tmd.transaction_id] = tmd
 
-    conn = None
+conn = None
 
-    try:
-        conn = mysql.connector.connect(
-            host=host,
-            username=dw_username,
-            password=dw_password,
-            database=dw_name
-        )
-    except mysql.connector.errors as e:
-        print("An error occurred:", e)
+try:
+    conn = mysql.connector.connect(
+        host=host,
+        username=dw_username,
+        password=dw_password,
+        database=dw_name
+    )
+except mysql.connector.errors as e:
+    print("An error occurred:", e)
     
 for i in dict.keys():
     cursor = conn.cursor()
@@ -187,19 +187,95 @@ for i in dict.keys():
         product_name = "'" + dict.get(i).product_name + "'"
         price = dict.get(i).price
 
-        query = "insert into product values ("+product_id+","+product_name+","+price+")"
+        query = "insert into product values ("+product_id+","+product_name+","+str(price)+")"
         cursor.execute(query)
+        result = cursor.fetchall()
 
     except mysql.connector.IntegrityError:
         pass
 
     #Supplier Table
+    try:
+        supplier_id = "'" + dict.get(i).supplier_id + "'"
+        supplier_name = "'" + dict.get(i).supplier_name + "'"
+
+        query = "insert into supplier values ("+supplier_id+","+supplier_name+")"
+        cursor.execute(query)
+
+    except mysql.connector.IntegrityError:
+        pass
 
     #Customer Table
+    try:
+        customer_id = "'" + dict.get(i).customer_id + "'"
+        customer_name = "'" + dict.get(i).customer_name + "'"
+
+        query = "insert into customer values ("+customer_id+","+customer_name+")"
+        cursor.execute(query)
+
+    except mysql.connector.IntegrityError:
+        pass
 
     #Store Table
+    try:
+        store_id = "'" + dict.get(i).store_id + "'"
+        store_name = "'" + dict.get(i).store_name + "'"
+
+        query = "insert into store values ("+store_id+","+store_name+")"
+        cursor.execute(query)
+
+    except mysql.connector.IntegrityError:
+        pass
 
     #Date Table
+    try:
+        time_id = "'" + dict.get(i).time_id + "'"
+        t_date = "'" + str(dict.get(i).t_date) + "'"
+        if (dict.get(i).t_date.day == 0 or dict.get(i).t_date.day == 6):
+            weekend = "1"
+        else:
+            weekend = "0"
+
+        if (dict.get(i).t_date.month >= 1 and dict.get(i).t_date.month <= 6):
+            half_of_year = "'First'"
+        if (dict.get(i).t_date.month >= 7 and dict.get(i).t_date.month <= 12):
+            half_of_year = "'Second'"
+
+        month = "'" + str(dict.get(i).t_date.month) + "'"
+
+        if (dict.get(i).t_date.month >= 1 and dict.get(i).t_date.month <= 3):
+            quarter = "'Q1'"
+        if (dict.get(i).t_date.month >= 4 and dict.get(i).t_date.month <= 6):
+            quarter = "'Q2'"
+        if (dict.get(i).t_date.month >= 7 and dict.get(i).t_date.month <= 9):
+            quarter = "'Q3'"
+        if (dict.get(i).t_date.month >= 10 and dict.get(i).t_date.month <= 12):
+            quarter = "'Q4'"
+
+        year = "'" + str(dict.get(i).t_date.year) + "'"
+
+        query = "insert into date values ("+time_id+","+t_date+","+weekend+","+half_of_year+","+month+","+quarter+","+year+")"
+        cursor.execute(query)
+
+    except mysql.connector.IntegrityError:
+        pass
 
     #Sales Table
+    try:
+        transaction_id = str(i)
+        product_id = "'" + dict.get(i).product_id + "'"
+        customer_id = "'" + dict.get(i).customer_id + "'"
+        time_id = "'" + dict.get(i).time_id + "'"
+        store_id = "'" + dict.get(i).store_id + "'"
+        supplier_id = "'" + dict.get(i).supplier_id + "'"
+        quantity = "'" + str(dict.get(i).quantity) + "'"
+        sale = "'" + str(dict.get(i).sale) + "'"
+
+        query = "insert into sales values ("+transaction_id+","+product_id+","+customer_id+","+time_id+","+store_id+","+supplier_id+","+quantity+","+sale+")"
+        cursor.execute(query)
+
+    except mysql.connector.IntegrityError:
+        pass
+
+conn.commit()
     
